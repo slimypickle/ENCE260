@@ -1,0 +1,35 @@
+From the ence260-ucfk4/assignment subdirectory, you need to clone your group's repository for the assignment. At the command line type:
+
+git clone https://eng-git.canterbury.ac.nz/ence260-YEAR/GroupXXX.git
+
+where XXX is your group number, and YEAR is the current year (e.g. 2025).
+
+Check that you have a newly created “GroupXXX” directory by typing “ls” at the command prompt. You should see: “README template GroupXXX”
+
+The /template directory contains a skeleton game.c and Makefile. This program will compile with make but not do anything. Copy these 2 files to your group_XXX directory:
+
+cd GroupXXX
+
+cp ../template/Makefile .
+
+cp ../template/game.c .
+
+Now add these files to your repository:
+
+git add Makefile
+git add game.c
+
+Next commit the added files to your local repository:
+
+git commit -m "Populating my repo with given files"
+
+Lastly, push these files to the remote repository (gitlab):
+
+git push
+
+You should add, commit and push any new files and changes you make during your assignment.
+
+Do not include the API functions (eg from /drivers or /utils) in your repository or any object or executable files. You should only include the Makefile and source files that you have written (or API files that you have edited for some reason).
+
+Do not create subdirs from your /group_XXX dir. All code should be in /group_XXX.
+
