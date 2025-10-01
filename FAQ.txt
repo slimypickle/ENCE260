@@ -1,0 +1,42 @@
+FAQ
+How do I install the AVR toolchain on Linux? See AVR compilation tools Page on Learn.
+How do I install the AVR toolchain on MacOS? See AVR compilation tools Page on Learn.
+How do I install the AVR toolchain on Windows? See AVR compilation tools Page on Learn.
+Why do I get the error: dfu-programmer failed to release interface 0? Ignore this error throughout the course. Your program is still being compiled and loaded on the microcontroller. Changing the USB port can sometimes make this go away.
+I get the error message "the target memory for the program is not blank". Try using: 
+
+dfu-programmer atmega32u2 erase --force   
+
+This will force the flash memory to be erased.
+
+The IR receiver has snapped off my UCFK - what can I do? See Philipp Hof in Rm206 Office inside the Embedded Systems Lab Rm204, Link Building (Electrical Wing ) to see if he can solder it back on.
+
+Why do I get dfu-programmer: no device present? Either you have not pushed the reset button or you do not have suitable USB permissions. 
+Why do I get a make error 1? This is probably because you have the wrong version of dfu-programmer.
+Why do I have to do a sudo make program instead of make program. This is because you do not have permission to access the USB.
+When I reset my UCFK4 I get a device not found error when trying to program it under Virtual Box. It appears you need to wait about 5 seconds before trying.
+Why do I get "make: avr-gcc: Command not found"?. This is because you do not have a cross-compiler avr-gcc for the AVR architecture installed.
+Why do I get "lab1-ex1.c:1:20: fatal error: avr/io.h: No such file or directory"?. You have not installed avr-libc.
+Why do I get error: MCU ‘atmega32u2’ supported for assembler only. You have an old version of avr-gcc installed. You need version 4.3.5 or later. Use avr-gcc -v to check the version.
+Why do I get a fatal error: string.h: file or directory not found. You have not installed avr-libc.
+Why do I get /usr/lib/gcc/avr/4.5.3/../../../avr/include/avr/io.h:364:6: warning: #warning "device type not defined". You have an old version of avr-libc that does not support the Atmega32u2.
+Why do the PIOs driving the LED matrix columns have to be low to enable a column? This is because they drive p-channel MOSFETs switches that are active low.
+Why is the infrared communications unreliable in some rooms with fluorescent lights? This is due to optical interference from the lights. The IR receiver is most sensitive for infrared light modulated at 36 kHz, however, it also responds to visible light. Secondly, modern fluorescent light ballasts modulate the lights on and off at a high frequency (over 20 kHz). Your eye cannot detect this but the sensitive IR receiver does, especially if the modulation frequency is close to its operating frequency of 36 kHz. The interference can be reduced by using a filter over the IR receiver to improve the rejection of visible light.
+Why does the ir_uart_putc function throw away the character received after transmission? This is due a subtle electrical inteference problem resulting from the layout of the PCB. Nevertheless, even if this was fixed, it is possible to receive an optical reflection of the transmitted message. The downside of this function is that it has to wait for the transmitted character to be sent before checking for a received chracter. An alternative is to use ir_uart_putc_nocheck that does not gobble the received character.
+How fast can I send data over the IR UART? The baud rate is set at 2400 bits/second (see drivers/avr/ir_uart.h) and 10 bits are required per 8 bit byte, thus 240 bytes per second can be sent.
+How can I make the IR comms more reliable? Sending data over the IR comms is a bit like communicating with a friend using postcards with one character written on each postcard. Some of the postcards can go missing, others may arrive from someone else, but they will arrive in the correct order. In addition, the character may get corrupted. To make things more reliable, it is essential that you do not send strings of data since if you miss a character the message will be garbled. Instead, just send messages of a single byte. It also helps to repeatedly send each message. If you want to send a message for a key press, the trick is to change the message between succesive keypresses so that the receiver can tell if there has been a new keypress (see apps/ir_uart_test4).
+When I use the rand function to generate random numbers I always get the same sequence. This is because rand generates pseudorandom numbers using a deterministic algorithm. To change the sequence you can seed the random number generator using the srand function. One approach is to read a timer/counter peripheral when a button is pushed (see apps/gobble7).
+Help! I made a small change to my program and nothing works. The most likely reasons are that you have an unintialised variable or that you have filled up the internal RAM (say by including a font header file in multiple files) or by having long strings.
+How do I determine how much flash (program memory) my program requires? Use the avr-size program, for example,
+avr-size hello3.out
+   text	   data	    bss	    dec	    hex	filename
+   2520	    566	     13	   3099	    c1b	hello3.out
+The column headed text specifies the number of bytes of machine code for your program. For the ATmega32U2 the limit is 32678 bytes (32 KB).
+
+How do I determine how much RAM (data memory) my program requires? Use the avr-size program, for example,
+avr-size hello3.out
+   text	   data	    bss	    dec	    hex	filename
+   2520	    566	     13	   3099	    c1b	hello3.out
+The column headed data specifies the number of bytes of RAM required for initialised static variables. For this application, this is mostly to store the font. The column headed bss specifies the number of bytes of RAM required for uninitialised static variables (these get set to zero). Unfortunately, most variables are stored on the stack and the amount of memory for them cannot be determined at compile time. One strategy to determine if you are running our of RAM (the ATmega32U2 has only 1024 bytes of RAM) is to declare all your variables as static. This will give you an upper limit on the amount of RAM required since not all local variables need be allocated simultaneously on the stack.
+
+How do I implement a state machine? There are many approaches! A simple example is shown in apps/ir_uart_demo1 and a slightly more complicated example is shown in apps/gobble7.
