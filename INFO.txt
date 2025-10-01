@@ -1,0 +1,120 @@
+Overview
+
+The UCFK4 has an ATmega32u2 microcontroller, a reset push button, a general-purpose pushbutton, a five-way navigation switch, a green LED that indicates if power is on, a user switchable blue LED, a seven by five dot-matrix display, an infrared LED, a 36 kHz infrared receiver, and a USB connector. The USB connector provides 5 V to run the microcontroller and to allow programs to be up-loaded.
+
+UCFK4
+
+Getting started
+Download and install the AVR compilation tools (see the Learn section AVR compilation tools). These have been installed on the ECE, COSC, and ENGCAD lab computers.
+Download the UCFK4 demo software:
+Using a command shell:
+
+$ git clone https://eng-git.canterbury.ac.nz/rmc84/ence260-ucfk4.git
+This should output something like:
+
+Cloning into 'ucfk4'...
+remote: Counting objects: 4253, done.
+remote: Compressing objects: 100% (1363/1363), done.
+remote: Total 4253 (delta 2936), reused 4122 (delta 2805)
+Receiving objects: 100% (4253/4253), 1.28 MiB | 53 KiB/s, done.
+Resolving deltas: 100% (2936/2936), done.
+Connect the UCFK4 to your computer with a USB cable. The green LED (LED2) should light.
+Fire up a terminal program and change directory to the ence260-ucfk4 repository cloned from gitlab.
+At the prompt, enter the commands:
+$ cd apps/space11
+$ make program
+You should see a simple minded space invaders type program running.
+
+
+Programming
+The ATmega32U2 microcontroller in the UCFK4 uses the AVR DFU bootloader. The bootloader program runs if the HWB pin (PD7) is low when an external reset occurs. The bootloader waits for your program to be transferred via USB. When your application program is programmed into flash memory, the bootloader starts running it. Flash memory is non-volatile so your program will not disappear when the power is removed.
+
+Resetting
+When the UCFK4 is reset, either by pushing the reset button (S2) or by recycling the power, the bootloader runs. The bootloader will transfer control to your application, if
+
+the power was recycled
+the HWB pin (PD7) is forced high by pushing S3
+a start command is sent to it over USB
+For example, the following sequence should reset the UCFK4:
+
+Push and hold S3
+Push and release S2
+Release S3
+
+
+Hardware
+The schematics and PCB layout can be found here. Here are the UCFK4 pin assignments and the UCKF4 bill of materials. 
+
+Microcontroller
+The UCFK4 uses the Atmel ATmega32u2 microcontroller (see the ATmega32u2 datasheet). It uses an AVR CPU (see the AVR instruction set manual).
+
+Crystal
+An 8 MHz crystal is used as the oscillator feedback element to set the CPU clock frequency. The crystal is required to provide the frequency precision required for USB; the ATmega32u2 will happily run using its internal RC oscillator.
+
+Reset pushbutton
+The reset pushbutton (S2) is used to reset the microcontroller by making the PC1 pin go low (this pin doubles a reset input and is often labelled RST/PC1). This pushbutton is connected via a current limiting resistor (R11) in case PC1 is configured as a high output.
+
+Pushbutton
+The pushbutton (S3) is active high. A pulldown resistor (R12) keeps the input to PD7 low when the button is not pushed. Pushing the button makes PD7 go high. A series resistor (R7) limits current in case PD7 is mistakenly programmed as a low output when S3 is pushed.
+
+Navigation switch
+The navigation switch (S1) can be pushed in five directions; north, east, south, west, and down (north is considered to be where the USB connector is). The common connection is connected to ground. The other connections are shared with the LED matrix columns using series resistors. To read the switch requires the LED matrix to be momentarily disabled while PC4--PC7 and PB7 are configured as inputs with pullups. If a contact is made, then the associated port pin will be low otherwise it will be held high by the pullup resistor (once the gate capacitance of the MOSFETs driving the LED matrix has been charged).
+
+Green LED
+The green power LED (LED2) is always lit when power is on the board. The brightness of the LED is set by the current limiting resistor (R10).
+
+Blue LED
+The blue LED (LED1) can be driven by configuring PC2 as a high output. The brightness of the LED is set by the current limiting resistor (R9).
+
+Infrared LED
+The infrared LED (IR1) can be driven by configuring PD0 as a high output and PD3 as a low output. The brightness of the LED is set by the current limiting resistor (R15) (although you won't see it lit unless you have infrared vision).
+
+The PD0 pin is multiplexed with the OC0B pin from Timer 0. Thus the timer can be programmed to automatically generate the desired modulation frequency. Similarly, the PD3 pin is multiplexed with the UART transmit output pin TXD1. Normally the UART transmit pin is high and thus the IR LED is off.
+
+LED matrix
+The LED matrix display has five columns and seven rows. Each of the columns is driven by a MOSFET to supply sufficient current if multiple rows are simultaneously displayed. Turning on a specific LED in the matrix requires driving the corresponding column and row low at the same time. If two LEDs need to be lit in the same row, then they need to be time division multiplexed at a rate so the human eye does not perceive flicker. The port connections to the LED matrix are:
+
+COL1    PC6    ROW1    PB6
+COL2    PB7    ROW2    PB5
+COL3    PC4    ROW3    PB4
+COL4    PC7    ROW4    PB3
+COL5    PC5    ROW5    PB2
+               ROW6    PB1
+               ROW7    PB0
+The LED matrix is not a surface mount component so it needs to be inserted in a surface mount socket.
+
+IR receiver
+The TSOP6136TR infrared receiver will detect infrared light modulated at 36 kHz. Its output is low when modulated infrared light is detected and high otherwise. It will gives the best range for modulation at 36 kHz but will also work at closer range for other frequencies. The receiver chip is available for other frequencies but 36 kHz was chosen since it is the most common frequency for TV infrared remote controls. The infrared receiver has an automatic gain control (AGC) to handle the wide range of received signal levels with range and angle.
+
+The infrared receiver output is connected to PD2. This pin is multiplexed with the UART receiver input RXD1.
+
+Mini USB-B connector
+The mini USB-B connector provides 5 V to power the board and communication with the AVR DFU bootloader for programming of the ATmega32u2 microcontroller.
+
+Expansion connector
+The UCFK4 expansion connector P1 allows other external devices to interfaced to the ATmega32u2 microcontroller. 
+
+Schematic
+The schematics and PCB layout can be found here. Things to note:
+
+R13 and C10 performs filtering of the power supply for the IR receiver.
+IR LEDs cannot tolerate much reverse bias so D1 is used to reduce the reverse voltage.
+The MOSFETs Q1 to Q5 provide more current than the Atmega32u2 PIO ports can source to drive the columns of the LED matrix.
+R7 limits the current in case button S3 is pushed and PD7 is inadvertently configured as an output.
+L1 provides some filtering of the power supplied by USB.
+C2 to C5 are local power supply decoupling capacitors.
+C1 is a bulk power supply decoupling capacitor.
+R6 and R8 provide differential series termination to prevent signal reflection on the USB.
+C6 and C7 assist with starting of the crystal oscillator circuit.
+R15 limits the current through the IR LED. A smaller value will give a longer IR range.
+R9 and R10 limit the current through the LEDs LED1 and LED2.
+Adding a piezo tweeter
+If you wish to make a beep or play a simple monophonic tune you can add a piezoelectric tweeter. You can pick these up for a few dollars locally from Jaycar or similar. This can be connected to ground and one of the spare PIO lines on the UCFK4 expansion connector P1. I would suggest using the two outermost pins corresponding to ground and PIO line PD6. To generate a tone, all you have to do is generate a square wave; just like flashing an LED but much faster. 
+
+Have a look in the \apps directory at squeak0, squeak1, squeak2, and squeak3.
+
+Battery operation
+The UCFK4 can be powered by batteries, either using the USB connector or the P1 UCFK4 expansion connector (pin 2 is Vdd and pin 1 is ground). The ATmega32u2 microcontroller operates between 2.7 and 5.5 V so either two or three 1.5 V batteries (alkaline) or three 1.2 V batteries (NiMh) are required. Do not connect the USB and battery at the same time. 
+
+Miscellaneous
+The UCFK4 was designed by Philipp Hof and Michael Hayes. Philipp did all the gnarly PCB routing. The PCBs were manufactured and populated by Assembly Specialists Limited in Christchurch.
