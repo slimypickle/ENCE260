@@ -45,9 +45,13 @@ int main(void)
         navswitch_update();
         button_update();
 
-        /* IR service must run even when paused to keep link robust. */
+        /* Always service IR to keep link reliable (even when paused). */
         game_ir_service(s);
 
+        /* Always allow pause/resume toggle. */
+        game_input_service_always(s);
+
+        /* Only handle movement, difficulty and serve when not paused. */
         if (!s->paused) {
             game_input_update(s);
             game_physics_step(s);
