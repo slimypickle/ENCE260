@@ -1,0 +1,12 @@
+BasedOnStyle: LLVM
+
+IndentWidth: 4
+BreakBeforeBraces: Custom
+
+# ENCE260 Styling rules are very strange...
+BraceWrapping:
+  AfterControlStatement: false
+  AfterFunction: true
+IndentCaseLabels: true
+
+InsertNewlineAtEOF: true

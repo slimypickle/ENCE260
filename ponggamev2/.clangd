@@ -1,0 +1,27 @@
+CompileFlags:
+  Add:
+    - -mmcu=atmega32u2
+    - -Os
+    - -Wall
+    - -Wstrict-prototypes
+    - -Wextra
+    - -g
+    - -I.
+    - -I../../utils
+    - -I../../fonts
+    - -I../../drivers
+    - -I../../drivers/avr
+  Compiler: avr-gcc
+
+Diagnostics:
+  UnusedIncludes: Strict
+  ClangTidy:
+    Add:
+      - readability-*
+      - bugprone-*
+    Remove:
+      - readability-magic-numbers
+      - readability-isolate-declaration
+
+Index:
+  Background: Build
